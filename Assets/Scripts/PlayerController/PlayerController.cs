@@ -99,7 +99,7 @@ public class PlayerController : MonoBehaviour
 
     public void Jump()
     {
-        if(_characterController.isGrounded) return;
+        if(!_characterController.isGrounded) return;
         _velocityY = Mathf.Sqrt(jumpHeight * -2f * Constants.Gravity);// 점프 공식
     }
 
