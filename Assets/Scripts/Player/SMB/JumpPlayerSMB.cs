@@ -1,0 +1,22 @@
+using UnityEngine;
+
+public class JumpPlayerSMB : StateMachineBehaviour
+{
+    private PlayerController _controller;
+
+    // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
+    override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        if(_controller == null) _controller = animator.GetComponent<PlayerController>();
+    }
+
+
+
+    // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
+    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        _controller.SetState(PlayerController.EPlayerState.Idle);
+    }
+
+
+}
