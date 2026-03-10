@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class IdleState : PlayerState,IPlayerState
+public class IdleState : PlayerState,ICharacterState
 {
     public IdleState(PlayerController playerController, Animator animator, PlayerInput playerInput)
      : base(playerController, animator, playerInput) { }
@@ -13,6 +13,7 @@ public class IdleState : PlayerState,IPlayerState
 
         //액션 할당
         _playerInput.actions["Jump"].performed += Jump;
+        _playerInput.actions["Fire"].performed += Attack;
     }
 
     public void Update()
@@ -30,6 +31,7 @@ public class IdleState : PlayerState,IPlayerState
 
         //할당된 액션 해제
         _playerInput.actions["Jump"].performed -= Jump;
+        _playerInput.actions["Fire"].performed -= Attack;
     }
 
 }

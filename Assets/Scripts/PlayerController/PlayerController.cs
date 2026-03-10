@@ -1,6 +1,7 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AdaptivePerformance;
 using UnityEngine.InputSystem;
 
 
@@ -28,11 +29,12 @@ public class PlayerController : MonoBehaviour
     public static readonly int PlayerAniParamJump = Animator.StringToHash("jump");
     public static readonly int PlayerMoveSpeed = Animator.StringToHash("move_speed");
     public static readonly int PlayerAniParamGroundDistance = Animator.StringToHash("ground_distance");
+    public static readonly int PlayerAniParamAttack = Animator.StringToHash("attack");
 
 
     public enum EPlayerState
     {
-        None , Idle , Move ,Jump
+        None , Idle , Move ,Jump , Attack
     }
 
     //물리
@@ -42,7 +44,7 @@ public class PlayerController : MonoBehaviour
     public EPlayerState PlayerState { get; private set; }
 
     //상태와 상태 객채를 담고 있는 Dictionary
-    private Dictionary<EPlayerState, IPlayerState> _playerStates;
+    private Dictionary<EPlayerState, ICharacterState> _playerStates;
 
     private void Awake()
     {
@@ -55,12 +57,14 @@ public class PlayerController : MonoBehaviour
         var idlePlayerState = new IdleState(this, _animator, _playerInput);
         var movePlayerState = new MoveState(this, _animator, _playerInput);
         var jumpPlayerState = new JumpState(this, _animator, _playerInput);
+        var attackPlayerState = new AttackState(this, _animator, _playerInput);
 
-        _playerStates = new Dictionary<EPlayerState, IPlayerState>
+        _playerStates = new Dictionary<EPlayerState, ICharacterState>
         {
             {EPlayerState.Idle , idlePlayerState },
             {EPlayerState.Move, movePlayerState },
             {EPlayerState.Jump, jumpPlayerState },
+            {EPlayerState.Attack, attackPlayerState },
         };
 
         //카메라 할당
@@ -70,6 +74,9 @@ public class PlayerController : MonoBehaviour
             _playerInput.camera = playerCamera;
             playerCamera.GetComponent<CameraController>().SetTarget(headTransform.transform , _playerInput);
         }
+
+        //커서 숨기기
+        _playerInput.actions["Cursor"].performed += _ => GameManager.Instance.SetCursorLock();
 
     }
 
@@ -119,5 +126,6 @@ public class PlayerController : MonoBehaviour
         movePosition.y = _velocityY * Time.deltaTime;
         _characterController.Move(movePosition);
     }
+    
 
 }

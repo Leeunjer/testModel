@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public interface IPlayerState
+public interface ICharacterState
 {
     void Enter();
     void Update();

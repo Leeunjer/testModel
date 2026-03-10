@@ -7,6 +7,8 @@ public class PlayerControllerEditor : Editor
 {
     public override void OnInspectorGUI()
     {
+        DrawDefaultInspector();
+
         EllenController controller = (EllenController)target;
 
         EditorGUILayout.Space();

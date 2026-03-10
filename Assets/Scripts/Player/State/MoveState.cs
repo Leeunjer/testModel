@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class MoveState : PlayerState, IPlayerState
+public class MoveState : PlayerState, ICharacterState
 {
     private float _moveSpeed;
 
