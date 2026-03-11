@@ -67,7 +67,7 @@ public class CameraController : MonoBehaviour
     private void OnActionLook(InputAction.CallbackContext context)
     {
         _lookVector = context.ReadValue<Vector2>();
-        Debug.Log("lookVector = " + _lookVector);
+        
     }
 
     private float AdjustCameraDistance()
