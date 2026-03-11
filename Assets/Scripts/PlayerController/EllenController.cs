@@ -4,12 +4,12 @@ public class EllenController : PlayerController
 {
     [SerializeField] private Transform weaponAttachTransform;
 
-    private WeaponController _weaponController;
+    private MeleeWeaponController _weaponController;
 
     private void Start()
     {
         var staffObject = Resources.Load<GameObject>("Staff");
-        _weaponController = Instantiate(staffObject,weaponAttachTransform).GetComponent<WeaponController>();
+        _weaponController = Instantiate(staffObject,weaponAttachTransform).GetComponent<MeleeWeaponController>();
     }
 
     public void MeleeAttackStart()

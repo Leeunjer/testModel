@@ -4724,6 +4724,7 @@ GameObject:
   - component: {fileID: 1042405374787052182}
   - component: {fileID: 1042405374796565877}
   - component: {fileID: 1042405374796565879}
+  - component: {fileID: 1042405374796565881}
   m_Layer: 0
   m_Name: Chomper
   m_TagString: Untagged
@@ -6350,7 +6351,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 1
+  m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 240
@@ -6389,14 +6390,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd9da4c3c2184b14a921a03108d012b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChomperEnemyController
-  patrolDetectionDistandce: 10
+  patrolDetectionDistandce: 5
   patrolWaitTime: 1
   patrolChance: 30
   detectionTargetLayerMask:
     serializedVersion: 2
     m_Bits: 256
-  detectionSightAnlge: 30
-  minimumRunDistans: 1
+  detectionSightAnlge: 15
+  minimumRunDistans: 0.5
 --- !u!4 &1042405374796565880
 Transform:
   m_ObjectHideFlags: 0
@@ -6415,6 +6416,22 @@ Transform:
   - {fileID: 1042405374796565858}
   m_Father: {fileID: 1042405374796565886}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1042405374796565881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1042405374796403028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca4f6239053874841937bede92a21c63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponController
+  trigerZone: []
+  targetLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!4 &1042405374796565882
 Transform:
   m_ObjectHideFlags: 0

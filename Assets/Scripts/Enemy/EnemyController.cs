@@ -51,15 +51,22 @@ public class EnemyController : MonoBehaviour
         _animator = GetComponent<Animator>();
         _navMeshAgent = GetComponent<NavMeshAgent>();
 
+
+        //Navmesh Agent ¼³Á¤
+        _navMeshAgent.updatePosition = false;
+        _navMeshAgent.updateRotation = true;
+
         var idleEnemyState = new IdleEnemyState(this,_animator , _navMeshAgent);
         var patrolEnemyState = new PatrolEnemyState(this,_animator ,_navMeshAgent);
         var chaseEnemyState = new ChaseEnemyState(this, _animator, _navMeshAgent);
+        var attackEnemyState = new AttackEnemyState(this,_animator , _navMeshAgent);
 
         _states = new Dictionary<EEnemyState, ICharacterState>
         {
             {EEnemyState.Idle, idleEnemyState},
             {EEnemyState.Patrol, patrolEnemyState},
             {EEnemyState.Chase, chaseEnemyState},
+            {EEnemyState.Attack, attackEnemyState},
         };
         SetState(EEnemyState.Idle);
 

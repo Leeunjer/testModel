@@ -18,7 +18,14 @@ public void Update()
         var detectionTargetTransform = _enemyController.DetectionTargetInCircle();
         if (detectionTargetTransform)
         {
-            //TODO : 공격 여부 판단
+            //공격 여부 판단
+            if (!_navMeshAgent.pathPending &&
+                _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance &&
+                DetectionTargetInsight(detectionTargetTransform.position))
+            {
+                _enemyController.SetState(EnemyController.EEnemyState.Attack);
+            }
+
 
             //달리기 여부 판단
             if(DetectionTargetInsight(detectionTargetTransform.position) &&
