@@ -4725,7 +4725,7 @@ GameObject:
   - component: {fileID: 1042405374796565877}
   - component: {fileID: 1042405374796565879}
   - component: {fileID: 1042405374796565881}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Chomper
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6428,10 +6428,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca4f6239053874841937bede92a21c63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponController
-  trigerZone: []
+  triggerZone:
+  - position: {x: 0, y: 0.4, z: 0}
+    radius: 1
   targetLayerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
 --- !u!4 &1042405374796565882
 Transform:
   m_ObjectHideFlags: 0

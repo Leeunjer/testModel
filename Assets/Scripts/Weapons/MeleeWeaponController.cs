@@ -1,10 +1,11 @@
 
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [Serializable]
-public class WeaponTriggerZone
+public struct WeaponTriggerZone // class 와 struct의 차이점 기입할 것
 {
     public Vector3 position;
     public float radius;
@@ -13,16 +14,90 @@ public class WeaponTriggerZone
 public class MeleeWeaponController : MonoBehaviour, IWeaPonObservalbe<GameObject>
 {
 
-    [SerializeField] private WeaponTriggerZone[] trigerZone;
+    [SerializeField] private WeaponTriggerZone[] triggerZone;
     [SerializeField] private LayerMask targetLayerMask;
 
-    private HashSet<Collider> _hitColliders = new HashSet<Collider>();
+    private HashSet<Collider> _hitColliders;
     private Vector3[] _previousTriggerPositions;
 
-    private List<IWeaponObserver<GameObject>> _observers = 
+    private List<IWeaponObserver<GameObject>> _observers =
         new List<IWeaponObserver<GameObject>>();
 
-    
+    private bool _isTriggering;
+    private void Awake()
+    {
+        _previousTriggerPositions = new Vector3[triggerZone.Length];
+        _hitColliders = new HashSet<Collider>();
+
+        _isTriggering = false;
+    }
+
+
+    //무기의 주인이 무이게에 트리거 작동을 시작하라고 전달 함수
+    public void StartTrigger()
+    {
+        _hitColliders.Clear();
+        for (int i = 0; i < triggerZone.Length; i++)
+        {
+            _previousTriggerPositions[i] = GetTriggerWorldPosition(triggerZone[i].position);
+        }
+        _isTriggering = true;
+    }
+
+    //무기의 주인이 무기에게 트리거 작동을 중단하라고 전달 함수
+    public void EndTrigger()
+    {
+        foreach (var hitCollider in _hitColliders)
+        {
+            Notify(hitCollider.gameObject);
+        }
+        _isTriggering = false;
+    }
+
+    private void FixedUpdate()
+    {
+        if (!_isTriggering) return;
+
+        for (int i = 0; i < triggerZone.Length; i++)
+        {
+            var worldPosition = GetTriggerWorldPosition(triggerZone[i].position);
+            var direction = worldPosition - _previousTriggerPositions[i];
+            Ray ray = new Ray(worldPosition, direction);
+
+            RaycastHit[] hits = new RaycastHit[1];
+
+            var hitCount = Physics.SphereCastNonAlloc(ray, triggerZone[i].radius, hits,
+                direction.magnitude, targetLayerMask); // NonAlloc은 객채를 계속해서 만들어 내는 것이 아니라 하나의 배열을 이용하여 해당 정보를 hits로 보내줌
+            for (int j = 0; j < hitCount; j++)
+            {
+                var hit = hits[j];
+                _hitColliders.Add(hit.collider);
+            }
+            _previousTriggerPositions[i] = worldPosition;
+        }
+    }
+
+    private Vector3 GetTriggerWorldPosition(Vector3 position)
+    {
+        return transform.position + transform.TransformDirection(position);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if(!Application.isPlaying) return;
+
+        for (int i = 0; i < triggerZone.Length; i++)
+        {
+            var worldPosition = GetTriggerWorldPosition(triggerZone[i].position);
+            var direction = worldPosition - _previousTriggerPositions[i];
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(worldPosition, triggerZone[i].radius);
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(worldPosition + direction , triggerZone[i].radius);
+        }
+    }
+
+    #region 옵저버 패턴 코드
 
     public void Subscribe(IWeaponObserver<GameObject> observer)
     {
@@ -44,4 +119,5 @@ public class MeleeWeaponController : MonoBehaviour, IWeaPonObservalbe<GameObject
             observer.OnNext(value);
         }
     }
+    #endregion
 }

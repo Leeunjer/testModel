@@ -1,6 +1,7 @@
+using System;
 using UnityEngine;
 
-public class EllenController : PlayerController
+public class EllenController : PlayerController, IWeaponObserver<GameObject>
 {
     [SerializeField] private Transform weaponAttachTransform;
 
@@ -9,14 +10,32 @@ public class EllenController : PlayerController
     private void Start()
     {
         var staffObject = Resources.Load<GameObject>("Staff");
-        _weaponController = Instantiate(staffObject,weaponAttachTransform).GetComponent<MeleeWeaponController>();
+        _weaponController = Instantiate(staffObject, weaponAttachTransform).GetComponent<MeleeWeaponController>();
     }
 
     public void MeleeAttackStart()
     {
 
+        _weaponController.StartTrigger();
     }
     public void MeleeAttackEnd()
+    {
+        _weaponController.EndTrigger();
+    }
+
+    public void OnNext(GameObject value)
+    {
+        var enemyController = value.GetComponent<EnemyController>();
+        if (enemyController != null) enemyController?.SetHit(10, -transform.forward); //√•±Ú««
+
+    }
+
+    public void OnCompleted()
+    {
+
+    }
+
+    public void OnError(Exception error)
     {
 
     }

@@ -30,11 +30,17 @@ public class PlayerController : MonoBehaviour
     public static readonly int PlayerMoveSpeed = Animator.StringToHash("move_speed");
     public static readonly int PlayerAniParamGroundDistance = Animator.StringToHash("ground_distance");
     public static readonly int PlayerAniParamAttack = Animator.StringToHash("attack");
+    public static readonly int PlayerAniParamHit = Animator.StringToHash("hit");
+    public static readonly int PlayerAniParamPositionhitX = Animator.StringToHash("hit_x");
+    public static readonly int PlayerAniParamPositionhitZ = Animator.StringToHash("hit_z");
+
+
+
 
 
     public enum EPlayerState
     {
-        None , Idle , Move ,Jump , Attack
+        None , Idle , Move ,Jump , Attack , Hit ,
     }
 
     //물리
@@ -58,6 +64,7 @@ public class PlayerController : MonoBehaviour
         var movePlayerState = new MoveState(this, _animator, _playerInput);
         var jumpPlayerState = new JumpState(this, _animator, _playerInput);
         var attackPlayerState = new AttackState(this, _animator, _playerInput);
+        var HitPlayerState = new HitState(this, _animator, _playerInput);
 
         _playerStates = new Dictionary<EPlayerState, ICharacterState>
         {
@@ -65,6 +72,7 @@ public class PlayerController : MonoBehaviour
             {EPlayerState.Move, movePlayerState },
             {EPlayerState.Jump, jumpPlayerState },
             {EPlayerState.Attack, attackPlayerState },
+            {EPlayerState.Hit,HitPlayerState },
         };
 
         //카메라 할당
@@ -127,5 +135,14 @@ public class PlayerController : MonoBehaviour
         _characterController.Move(movePosition);
     }
     
+    public void SetHit(int damage , Vector3 attackDirection)
+    {
+        //TODO: 피격 당했을 때 감지, 데미지를 적용
+        Debug.Log("Damaged" + damage);
+        SetState(EPlayerState.Hit);
+
+        _animator.SetFloat(PlayerAniParamPositionhitX, attackDirection.x);
+        _animator.SetFloat(PlayerAniParamPositionhitZ, attackDirection.z);
+    }
 
 }

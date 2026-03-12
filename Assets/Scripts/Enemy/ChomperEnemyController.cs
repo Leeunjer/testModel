@@ -16,17 +16,22 @@ public class ChomperEnemyController : EnemyController, IWeaponObserver<GameObjec
     }
 
     public void AttackBegin()
-    { 
-
+    {
+        _meleeWeaponController.StartTrigger();
     } 
     public void AttackEnd() 
     {
-
+        _meleeWeaponController.EndTrigger();
     }
 
     public void OnNext(GameObject value)
     {
-        //TODO: 플레이어에게 데미지를 전달
+        
+        var playerController = value.GetComponent<PlayerController>();
+
+
+        //대상에게 데미지를 전달
+        if(playerController) playerController?.SetHit(10 , -transform.forward);
     }
 
     public void OnCompleted()

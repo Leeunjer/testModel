@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
+using static PlayerController;
 
 [RequireComponent (typeof(Animator))]
 [RequireComponent(typeof(NavMeshAgent))]
@@ -60,6 +61,7 @@ public class EnemyController : MonoBehaviour
         var patrolEnemyState = new PatrolEnemyState(this,_animator ,_navMeshAgent);
         var chaseEnemyState = new ChaseEnemyState(this, _animator, _navMeshAgent);
         var attackEnemyState = new AttackEnemyState(this,_animator , _navMeshAgent);
+        var hitEnemyState = new HitEnemyState(this,_animator , _navMeshAgent);
 
         _states = new Dictionary<EEnemyState, ICharacterState>
         {
@@ -67,6 +69,7 @@ public class EnemyController : MonoBehaviour
             {EEnemyState.Patrol, patrolEnemyState},
             {EEnemyState.Chase, chaseEnemyState},
             {EEnemyState.Attack, attackEnemyState},
+            {EEnemyState.Hit,hitEnemyState },
         };
         SetState(EEnemyState.Idle);
 
@@ -154,5 +157,14 @@ public class EnemyController : MonoBehaviour
             Gizmos.DrawWireSphere(_navMeshAgent.destination,0.5f);
             Gizmos.DrawLine(transform.position,_navMeshAgent.destination);
         }
+    }
+
+    public void SetHit(int damage, Vector3 attackDirection)
+    {
+        // 피격 당했을 때 감지, 데미지를 적용
+        Debug.Log("Damaged" + damage);
+        SetState(EEnemyState.Hit);
+
+        
     }
 }
