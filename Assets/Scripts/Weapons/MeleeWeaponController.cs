@@ -39,7 +39,7 @@ public class MeleeWeaponController : MonoBehaviour, IWeaPonObservalbe<GameObject
         _hitColliders.Clear();
         for (int i = 0; i < triggerZone.Length; i++)
         {
-            _previousTriggerPositions[i] = GetTriggerWorldPosition(triggerZone[i].position);
+            _previousTriggerPositions[i] = transform.TransformDirection(triggerZone[i].position);
         }
         _isTriggering = true;
     }
@@ -60,20 +60,28 @@ public class MeleeWeaponController : MonoBehaviour, IWeaPonObservalbe<GameObject
 
         for (int i = 0; i < triggerZone.Length; i++)
         {
-            var worldPosition = GetTriggerWorldPosition(triggerZone[i].position);
-            var direction = worldPosition - _previousTriggerPositions[i];
+            var worldPosition = transform.TransformPoint(triggerZone[i].position);
+            var direction = transform.TransformDirection(_previousTriggerPositions[i] - worldPosition);
+            var maxDistance = Vector3.Distance(triggerZone[i].position, _previousTriggerPositions[i]);
+
             Ray ray = new Ray(worldPosition, direction);
 
             RaycastHit[] hits = new RaycastHit[1];
 
             var hitCount = Physics.SphereCastNonAlloc(ray, triggerZone[i].radius, hits,
-                direction.magnitude, targetLayerMask); // NonAlloc은 객채를 계속해서 만들어 내는 것이 아니라 하나의 배열을 이용하여 해당 정보를 hits로 보내줌
-            for (int j = 0; j < hitCount; j++)
+                maxDistance, targetLayerMask); // NonAlloc은 객채를 계속해서 만들어 내는 것이 아니라 하나의 배열을 이용하여 해당 정보를 hits로 보내줌
+            //for (int j = 0; j < hitCount; j++)
+            //{
+            //    var hit = hits[j];
+            //    _hitColliders.Add(hit.collider);
+            //}
+
+            if (hitCount > 0)
             {
-                var hit = hits[j];
-                _hitColliders.Add(hit.collider);
+                Notify(hits[0].collider.gameObject);
+                _isTriggering = false;
             }
-            _previousTriggerPositions[i] = worldPosition;
+            _previousTriggerPositions[i] = triggerZone[i].position;
         }
     }
 
@@ -88,12 +96,13 @@ public class MeleeWeaponController : MonoBehaviour, IWeaPonObservalbe<GameObject
 
         for (int i = 0; i < triggerZone.Length; i++)
         {
-            var worldPosition = GetTriggerWorldPosition(triggerZone[i].position);
-            var direction = worldPosition - _previousTriggerPositions[i];
+            var triggerZonePosition = transform.TransformPoint(triggerZone[i].position);
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(worldPosition, triggerZone[i].radius);
+            Gizmos.DrawWireSphere(triggerZonePosition, triggerZone[i].radius);
+
+            var previousTriggerZonePosition = transform.TransformPoint(_previousTriggerPositions[i]);
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(worldPosition + direction , triggerZone[i].radius);
+            Gizmos.DrawWireSphere(previousTriggerZonePosition, triggerZone[i].radius);
         }
     }
 

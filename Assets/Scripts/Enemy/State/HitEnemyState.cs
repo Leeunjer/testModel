@@ -9,7 +9,7 @@ public class HitEnemyState : EnemyState, ICharacterState
 
     public void Enter()
     {
-        
+        _animator.SetTrigger(EnemyController.EnemyAniParamHit);
     }
 
     public void Exit()

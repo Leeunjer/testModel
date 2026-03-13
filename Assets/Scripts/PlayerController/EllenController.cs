@@ -4,6 +4,8 @@ using UnityEngine;
 public class EllenController : PlayerController, IWeaponObserver<GameObject>
 {
     [SerializeField] private Transform weaponAttachTransform;
+    [SerializeField] private int strngth;
+
 
     private MeleeWeaponController _weaponController;
 
@@ -11,6 +13,7 @@ public class EllenController : PlayerController, IWeaponObserver<GameObject>
     {
         var staffObject = Resources.Load<GameObject>("Staff");
         _weaponController = Instantiate(staffObject, weaponAttachTransform).GetComponent<MeleeWeaponController>();
+        _weaponController.Subscribe(this);
     }
 
     public void MeleeAttackStart()
@@ -26,7 +29,7 @@ public class EllenController : PlayerController, IWeaponObserver<GameObject>
     public void OnNext(GameObject value)
     {
         var enemyController = value.GetComponent<EnemyController>();
-        if (enemyController != null) enemyController?.SetHit(10, -transform.forward); //√•±Ú««
+        if (enemyController) enemyController?.SetHit(strngth, transform.forward); 
 
     }
 
