@@ -14,7 +14,7 @@ public struct EnemyStatus
     public int hp;
 }
 
-[RequireComponent (typeof(Animator))]
+[RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Rigidbody))]
 
@@ -31,16 +31,22 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float detectionSightAnlge = 30f;
     [SerializeField] private float minimumRunDistans = 1f;
 
-    [Header("Status")]
-    [SerializeField] private EnemyStatus enemyStatus;
+    [Header("Status")][SerializeField] private EnemyStatus enemyStatus;
 
+    [Header("Renderer")]
+    [SerializeField] private Renderer enemyRenderer;
 
+    //Ragdoll
+    [SerializeField] private GameObject ragdollRoot;
+    private Collider[] ragdollColliders;
+    private Rigidbody[] ragdollRigidbodys;
+    private CharacterJoint[] ragdollCharacterJoints;
 
 
     public float PatrolDetectionDistandce => patrolDetectionDistandce;
     public float PatrolWaitTime => patrolWaitTime;
     public float PatrolChance => patrolChance;
-    public float DetectionSightAnlge =>detectionSightAnlge;
+    public float DetectionSightAnlge => detectionSightAnlge;
     public float MinimumRunDistance => minimumRunDistans;
 
     private Animator _animator;
@@ -52,7 +58,7 @@ public class EnemyController : MonoBehaviour
     //상태
     public enum EEnemyState
     {
-        None, Idle , Patrol, Chase, Attack , Hit , Dead
+        None, Idle, Patrol, Chase, Attack, Hit, Dead
     }
     public EEnemyState State { get; private set; }
     private Dictionary<EEnemyState, ICharacterState> _states;
@@ -88,12 +94,12 @@ public class EnemyController : MonoBehaviour
         _navMeshAgent.updatePosition = false;
         _navMeshAgent.updateRotation = true;
 
-        var idleEnemyState = new IdleEnemyState(this,_animator , _navMeshAgent);
-        var patrolEnemyState = new PatrolEnemyState(this,_animator ,_navMeshAgent);
+        var idleEnemyState = new IdleEnemyState(this, _animator, _navMeshAgent);
+        var patrolEnemyState = new PatrolEnemyState(this, _animator, _navMeshAgent);
         var chaseEnemyState = new ChaseEnemyState(this, _animator, _navMeshAgent);
-        var attackEnemyState = new AttackEnemyState(this,_animator , _navMeshAgent);
-        var hitEnemyState = new HitEnemyState(this,_animator , _navMeshAgent);
-        var deadEnemyState = new DeadEnemyState(this,_animator , _navMeshAgent);
+        var attackEnemyState = new AttackEnemyState(this, _animator, _navMeshAgent);
+        var hitEnemyState = new HitEnemyState(this, _animator, _navMeshAgent);
+        var deadEnemyState = new DeadEnemyState(this, _animator, _navMeshAgent);
 
         _states = new Dictionary<EEnemyState, ICharacterState>
         {
@@ -110,6 +116,13 @@ public class EnemyController : MonoBehaviour
         _targetTransform = null;
 
         _hpBarController = GetComponent<HPBarController>();
+
+        //Ragdoll 요소 할당
+        ragdollColliders = ragdollRoot.GetComponentsInChildren<Collider>();
+        ragdollRigidbodys = ragdollRoot.GetComponentsInChildren<Rigidbody>();
+        ragdollCharacterJoints = ragdollRoot.GetComponentsInChildren<CharacterJoint>();
+
+        SetRagdollEnable(false);
     }
 
     public void SetState(EEnemyState state)
@@ -118,7 +131,7 @@ public class EnemyController : MonoBehaviour
         if (State != EEnemyState.None) _states[State].Exit();
         State = state;
         if (State != EEnemyState.None) _states[State].Enter();
-        
+
 
     }
     private void Update()
@@ -143,7 +156,7 @@ public class EnemyController : MonoBehaviour
     public Transform DetectionTargetInCircle()
     {
         if (!_targetTransform)
-        { 
+        {
             //_targetTransform이 없으면 , 새롭게 찾기
             Physics.OverlapSphereNonAlloc(transform.position, PatrolDetectionDistandce,
                 _detectionResults, detectionTargetLayerMask); //?
@@ -157,8 +170,8 @@ public class EnemyController : MonoBehaviour
         else
         {
             //targetTrasnform이 있으면, 그 대상과의 거리를 계산해서 정해지 거리를 벗어나면 _targetTarnsform 정보 초기화
-            float playerDistance = Vector3.Distance(transform.position,_targetTransform.position);
-            if(playerDistance> patrolDetectionDistandce)
+            float playerDistance = Vector3.Distance(transform.position, _targetTransform.position);
+            if (playerDistance > patrolDetectionDistandce)
             {
                 _targetTransform = null;
                 _detectionResults[0] = null;
@@ -172,11 +185,11 @@ public class EnemyController : MonoBehaviour
     {
         //감지 범위
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position,patrolDetectionDistandce);
+        Gizmos.DrawWireSphere(transform.position, patrolDetectionDistandce);
 
         //시야각
         Gizmos.color = Color.red;
-        Vector3 rightDirection = Quaternion.Euler(0,detectionSightAnlge,0)*transform.forward;
+        Vector3 rightDirection = Quaternion.Euler(0, detectionSightAnlge, 0) * transform.forward;
         Vector3 leftDirection = Quaternion.Euler(0, -detectionSightAnlge, 0) * transform.forward;
         Gizmos.DrawRay(transform.position, rightDirection * patrolDetectionDistandce);
         Gizmos.DrawRay(transform.position, leftDirection * patrolDetectionDistandce);
@@ -189,16 +202,40 @@ public class EnemyController : MonoBehaviour
         if (_navMeshAgent && _navMeshAgent.hasPath)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(_navMeshAgent.destination,0.5f);
-            Gizmos.DrawLine(transform.position,_navMeshAgent.destination);
+            Gizmos.DrawWireSphere(_navMeshAgent.destination, 0.5f);
+            Gizmos.DrawLine(transform.position, _navMeshAgent.destination);
         }
     }
+
+    private void SetRagdollEnable(bool isEnable)
+    {
+        foreach (var ragdollCollider in ragdollColliders)
+        {
+            ragdollCollider.enabled = isEnable;
+        }
+        foreach (var ragdollRigidbody in ragdollRigidbodys)
+        {
+            ragdollRigidbody.isKinematic = !isEnable;
+            ragdollRigidbody.detectCollisions = isEnable;
+
+        }
+
+        _animator.enabled = !isEnable;
+        ragdollRoot.GetComponent<Collider>().enabled = !isEnable;
+        ragdollRoot.GetComponent<Rigidbody>().detectCollisions = !isEnable;
+
+        _animator.Rebind();
+        _animator.Update(0f);
+
+    }
+
+
 
     public void SetHit(int damage, Vector3 attackDirection)
     {
         float hpResult = (float)enemyStatus.hp / enemyStatus.maxHp;
 
-        if(enemyStatus.hp <= 0)
+        if (enemyStatus.hp <= 0)
         {
             SetState(EEnemyState.Dead);
 
@@ -208,11 +245,12 @@ public class EnemyController : MonoBehaviour
             var direction = attackDirection;
             direction.y = 1f;
             direction = direction.normalized;
-            var force = direction * 5f;
+            var force = direction * 10f;
 
-            _rigidBody.AddForce(force,ForceMode.Impulse);
+            _rigidBody.AddForce(force, ForceMode.Impulse);
 
             _collider.isTrigger = false;
+
         }
         else
         {
@@ -224,8 +262,8 @@ public class EnemyController : MonoBehaviour
             StartCoroutine(Knockback(attackDirection));
         }
 
-        
-        
+
+
     }
     private IEnumerator Knockback(Vector3 direction)
     {
@@ -248,5 +286,32 @@ public class EnemyController : MonoBehaviour
         }
 
         transform.position = targetPosition;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+
+        if (collision.gameObject.CompareTag("Ground") && enemyStatus.hp <= 0)
+        {
+            SetRagdollEnable(true);
+            StartCoroutine(Dessolve());
+        }
+    }
+
+    IEnumerator Dessolve()
+    {
+
+        var probertyBlock = new MaterialPropertyBlock();
+        enemyRenderer.GetPropertyBlock(probertyBlock);
+
+        var value = 0f;
+        while (value < 1f)
+        {
+            value += Time.deltaTime;
+            probertyBlock.SetFloat("_Cutoff", value);
+            enemyRenderer.SetPropertyBlock(probertyBlock);
+            yield return null;
+        }
+        Destroy(gameObject);
     }
 }
